@@ -1,6 +1,6 @@
 [gd_scene load_steps=9 format=3 uid="uid://b7wco08t5r116"]
 
-[ext_resource type="Script" path="res://Scripts/NewVer.cs" id="1_udx85"]
+[ext_resource type="Script" uid="uid://uv54kthamir" path="res://Scripts/NewVer.cs" id="1_udx85"]
 [ext_resource type="Texture2D" uid="uid://dherg8j0a21h2" path="res://Sprites/CoursePanel.png" id="2_e1pjj"]
 [ext_resource type="StyleBox" uid="uid://c8ip85nk5v8ds" path="res://Sprites/UIButtons.stylebox" id="3_5n7a8"]
 [ext_resource type="Texture2D" uid="uid://bqd1321xxqoej" path="res://Sprites/CloseButton.png" id="3_xnevs"]
