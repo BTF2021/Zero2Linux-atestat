@@ -28,7 +28,7 @@ public class stats
 	public int flawlesstests = 0;     //Nr teste fara greseli
 	public bool Adv = true;
 	public bool Spc = true;
-	public float VideoVolume = 0;
+	public float VideoVolume = 0;	  //Intre -60 si 0
 	public bool QNumOnly = false;
 	public bool AdvQ = true;
 	public bool ChkUpdates = false;

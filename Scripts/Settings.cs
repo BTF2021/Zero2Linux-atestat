@@ -5,7 +5,6 @@ public partial class Settings : Control
 {
 	private DefaultData _data;
 	private HSlider _slider;
-	private bool video;
 	private Vector2 mousepos;
 	private bool inputgrab;
 	private Vector2 dif;
@@ -16,8 +15,6 @@ public partial class Settings : Control
 		_slider.Value = _data.currentStats.VideoVolume;
 		GetNode<LineEdit>("Panel/Settings/Altele/VBoxContainer/Name/NameEdit").Text = _data.currentStats.UsrName;
 		GetNode<ColorPickerButton>("Panel/Settings/Altele/VBoxContainer/FavColour/ColorButton").Color = _data.currentStats.FavColor;
-
-		video = _data.isvideoavailable;           //Pentru _Process
 
 		if(!_data.isvideoavailable)
 		{	GetNode<Label>("Panel/Settings/Lectii/VBoxContainer/VideoVolume").QueueFree();
@@ -57,17 +54,7 @@ public partial class Settings : Control
 
 	// Called every frame. 'delta' is the elapsed time since the previous frame.
 	public override void _Process(double delta)
-	{	//Volum
-		//Din motive necunoscute, daca folosesti _data.isvideoavailable in loc de video, editorul o sa dea o eroare LA FIECARE FRAME.
-		//Programul functioneaza si cu _data.isvideoavailable, dar prefer sa nu mai dea erori de fiecare data cand deschid Settings
-		if(video)
-		{
-			if(_slider.Value == -11) GetNode<Label>("Panel/Settings/Lectii/VBoxContainer/VideoVolume/VideoVolumeText").Text = "Mut";
-			else if(_slider.Value == 10) GetNode<Label>("Panel/Settings/Lectii/VBoxContainer/VideoVolume/VideoVolumeText").Text = "Max";
-			else GetNode<Label>("Panel/Settings/Lectii/VBoxContainer/VideoVolume/VideoVolumeText").Text = (_slider.Value + 11).ToString();
-		}
-
-		mousepos = GetViewport().GetMousePosition();
+	{	mousepos = GetViewport().GetMousePosition();
 		var winpos = GetNode<Sprite2D>("Panel").Position;
 		var newpos = Position;
 		//Pozitia este raportata la centrul ferestrei

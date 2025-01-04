@@ -181,25 +181,16 @@ text = "Volum video"
 [node name="VideoVolumeSlide" type="HSlider" parent="Panel/Settings/Lectii/VBoxContainer/VideoVolume"]
 custom_minimum_size = Vector2(200, 0)
 layout_mode = 0
-offset_left = 430.0
+offset_left = 413.0
 offset_top = 3.0
-offset_right = 630.0
+offset_right = 659.0
 offset_bottom = 27.0
 scale = Vector2(1.25, 1.25)
 tooltip_text = "Regleaza volumul videoclipurilor"
 theme_override_styles/slider = ExtResource("3_7a02l")
-min_value = -11.0
-max_value = 10.0
+min_value = -60.0
+max_value = 0.0
 rounded = true
-
-[node name="VideoVolumeText" type="Label" parent="Panel/Settings/Lectii/VBoxContainer/VideoVolume"]
-layout_mode = 0
-offset_left = 685.0
-offset_top = 3.0
-offset_right = 733.0
-offset_bottom = 31.0
-theme_override_font_sizes/font_size = 20
-text = "11"
 
 [node name="MarginContainer2" type="MarginContainer" parent="Panel/Settings/Lectii/VBoxContainer"]
 custom_minimum_size = Vector2(0, 5)

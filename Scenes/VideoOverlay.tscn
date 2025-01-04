@@ -1,4 +1,4 @@
-[gd_scene load_steps=14 format=3 uid="uid://b5r4kq07nfvp1"]
+[gd_scene load_steps=15 format=3 uid="uid://b5r4kq07nfvp1"]
 
 [ext_resource type="Script" uid="uid://chnjwc7yjanfc" path="res://Scripts/VideoOverlay.cs" id="1_8kp3d"]
 [ext_resource type="Texture2D" uid="uid://cuv7m0o2p7huh" path="res://Sprites/Back.png" id="2_5ji7h"]
@@ -12,6 +12,7 @@
 [ext_resource type="Texture2D" uid="uid://ce7r8ib5refvj" path="res://Sprites/Frwrd10sHighlight.png" id="7_pggls"]
 [ext_resource type="StyleBox" uid="uid://dhjub7y84wcpf" path="res://Sprites/Slider.stylebox" id="8_ew0bt"]
 [ext_resource type="Texture2D" uid="uid://0cx1a0sumavq" path="res://Sprites/FullscrHighlight.png" id="9_tshvh"]
+[ext_resource type="Texture2D" uid="uid://b1fm5c1pp08qn" path="res://Sprites/VolumeLow.png" id="9_x7xu5"]
 
 [sub_resource type="FFmpegVideoStream" id="FFmpegVideoStream_l8t6t"]
 
@@ -46,13 +47,47 @@ offset_bottom = 710.0
 scale = Vector2(1.2, 1.2)
 color = Color(0.0313726, 0.0313726, 0.0313726, 0.607843)
 
+[node name="Seekbar" type="Control" parent="ControlsTint"]
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="Base" type="Line2D" parent="ControlsTint/Seekbar"]
+points = PackedVector2Array(0, 0, 1066.67, 0)
+closed = true
+width = 8.0
+default_color = Color(0.374139, 0.374139, 0.374139, 1)
+joint_mode = 2
+begin_cap_mode = 2
+end_cap_mode = 2
+
+[node name="Progress" type="Line2D" parent="ControlsTint/Seekbar"]
+points = PackedVector2Array(0, 0, 1066.67, 0)
+closed = true
+width = 8.0
+default_color = Color(0.117647, 0.4, 0.960784, 1)
+joint_mode = 2
+begin_cap_mode = 2
+end_cap_mode = 2
+
+[node name="Seekbar" type="HSlider" parent="ControlsTint/Seekbar"]
+layout_mode = 2
+offset_left = -5.0
+offset_top = -18.0
+offset_right = 1072.0
+offset_bottom = 18.0
+focus_mode = 0
+mouse_filter = 1
+theme_override_styles/slider = ExtResource("8_ew0bt")
+scrollable = false
+
 [node name="Controls" type="HBoxContainer" parent="ControlsTint"]
 layout_mode = 0
 offset_top = 8.0
 offset_right = 1067.0
 offset_bottom = 44.0
 size_flags_vertical = 4
-theme_override_constants/separation = 3
+theme_override_constants/separation = 6
 
 [node name="MarginContainer" type="MarginContainer" parent="ControlsTint/Controls"]
 layout_mode = 2
@@ -80,56 +115,55 @@ mouse_filter = 1
 texture_normal = ExtResource("4_0c7my")
 texture_pressed = ExtResource("7_pggls")
 
-[node name="VSeparator" type="VSeparator" parent="ControlsTint/Controls"]
-layout_mode = 2
-mouse_filter = 2
-
-[node name="Volum" type="VBoxContainer" parent="ControlsTint/Controls"]
+[node name="Volum" type="HBoxContainer" parent="ControlsTint/Controls"]
 layout_mode = 2
 
-[node name="VolumeNum" type="Label" parent="ControlsTint/Controls/Volum"]
+[node name="Volum" type="TextureButton" parent="ControlsTint/Controls/Volum"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 11
-text = "Volum: 0"
-horizontal_alignment = 1
+mouse_filter = 1
+texture_normal = ExtResource("9_x7xu5")
 
-[node name="Volume" type="HSlider" parent="ControlsTint/Controls/Volum"]
+[node name="Panel" type="Panel" parent="ControlsTint/Controls/Volum"]
+clip_children = 2
+custom_minimum_size = Vector2(0.01, 0)
+layout_mode = 2
+mouse_filter = 1
+
+[node name="Slider" type="HSlider" parent="ControlsTint/Controls/Volum/Panel"]
 custom_minimum_size = Vector2(110, 0)
 layout_mode = 2
+offset_left = 0.5
+offset_top = 9.0
+offset_right = 110.5
+offset_bottom = 25.0
 focus_mode = 0
 mouse_filter = 1
 theme_override_styles/slider = ExtResource("8_ew0bt")
-min_value = -11.0
-max_value = 10.0
-
-[node name="VSeparator2" type="VSeparator" parent="ControlsTint/Controls"]
-layout_mode = 2
-mouse_filter = 2
-
-[node name="Seekbar" type="HSlider" parent="ControlsTint/Controls"]
-custom_minimum_size = Vector2(606, 36)
-layout_mode = 2
-focus_mode = 0
-mouse_filter = 1
-theme_override_styles/slider = ExtResource("8_ew0bt")
-
-[node name="VSeparator3" type="VSeparator" parent="ControlsTint/Controls"]
-layout_mode = 2
-mouse_filter = 2
+min_value = -60.0
+max_value = 0.0
+scrollable = false
 
 [node name="Time" type="Label" parent="ControlsTint/Controls"]
 custom_minimum_size = Vector2(175, 0)
 layout_mode = 2
 text = "hh::mm::ss/hh:mm:ss"
-horizontal_alignment = 1
 vertical_alignment = 1
+
+[node name="MarginContainer2" type="MarginContainer" parent="ControlsTint/Controls"]
+layout_mode = 2
+size_flags_horizontal = 3
 
 [node name="Fullscr" type="TextureButton" parent="ControlsTint/Controls"]
 layout_mode = 2
+size_flags_horizontal = 10
 focus_mode = 0
 mouse_filter = 1
 texture_normal = ExtResource("5_4p4g7")
 texture_pressed = ExtResource("9_tshvh")
+
+[node name="MarginContainer3" type="MarginContainer" parent="ControlsTint/Controls"]
+custom_minimum_size = Vector2(5, 0)
+layout_mode = 2
 
 [node name="BackTint" type="ColorRect" parent="."]
 offset_right = 48.0
@@ -148,17 +182,18 @@ texture_pressed = ExtResource("3_5uc3p")
 
 [node name="Timer" type="Timer" parent="."]
 
-[connection signal="mouse_entered" from="ControlsTint" to="." method="_on_mouse_entered"]
-[connection signal="mouse_exited" from="ControlsTint" to="." method="_on_mouse_exited"]
+[connection signal="drag_ended" from="ControlsTint/Seekbar/Seekbar" to="." method="_on_drag_ended"]
+[connection signal="drag_started" from="ControlsTint/Seekbar/Seekbar" to="." method="_on_drag_started"]
+[connection signal="mouse_entered" from="ControlsTint/Seekbar/Seekbar" to="." method="_on_seekbar_mouse_entered"]
+[connection signal="mouse_exited" from="ControlsTint/Seekbar/Seekbar" to="." method="_on_seekbar_mouse_exited"]
 [connection signal="pressed" from="ControlsTint/Controls/Backward" to="." method="_on_backward_pressed"]
 [connection signal="pressed" from="ControlsTint/Controls/Play" to="." method="_on_play_pressed"]
 [connection signal="pressed" from="ControlsTint/Controls/Forward" to="." method="_on_forward_pressed"]
-[connection signal="drag_started" from="ControlsTint/Controls/Volum/Volume" to="." method="_on_volume_drag_started"]
-[connection signal="value_changed" from="ControlsTint/Controls/Volum/Volume" to="." method="_on_volume_changed"]
-[connection signal="drag_ended" from="ControlsTint/Controls/Seekbar" to="." method="_on_drag_ended"]
-[connection signal="drag_started" from="ControlsTint/Controls/Seekbar" to="." method="_on_drag_started"]
+[connection signal="mouse_entered" from="ControlsTint/Controls/Volum" to="." method="_on_volum_mouse_entered"]
+[connection signal="mouse_exited" from="ControlsTint/Controls/Volum" to="." method="_on_volum_mouse_exited"]
+[connection signal="pressed" from="ControlsTint/Controls/Volum/Volum" to="." method="_on_volum_pressed"]
+[connection signal="drag_started" from="ControlsTint/Controls/Volum/Panel/Slider" to="." method="_on_volume_drag_started"]
+[connection signal="value_changed" from="ControlsTint/Controls/Volum/Panel/Slider" to="." method="_on_volume_changed"]
 [connection signal="pressed" from="ControlsTint/Controls/Fullscr" to="." method="_on_fullscr_pressed"]
-[connection signal="mouse_entered" from="BackTint" to="." method="_on_mouse_entered"]
-[connection signal="mouse_exited" from="BackTint" to="." method="_on_mouse_exited"]
 [connection signal="pressed" from="BackTint/Back" to="." method="_on_back_pressed"]
 [connection signal="timeout" from="Timer" to="." method="_on_timer_timeout"]
