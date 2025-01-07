@@ -1,17 +1,18 @@
+//Folosit pentru meniul principal
 using Godot;
 using System;
 
 public partial class Main : Node2D
 {
 	private DefaultData _data;
-	private HttpRequest request;
-	[Signal] public delegate void DownloadEventHandler(int mode);
+	private HttpRequest request;	//Request http pentru verificarea unei noi versiuni a programului
+	[Signal] public delegate void DownloadEventHandler(int mode);	//Semnal trimis de NewVer.cs atunci cand se descarca o noua versiune
 	// Called when the node enters the scene tree for the first time.
 	public override void _Ready()
 	{	_data = (DefaultData)GetNode("/root/DefaultData");
-		_data.ReadSave(_data.LoggedUser);
+		_data.ReadSave(_data.LoggedUser);	//Aici citim ce este salvat pentru utilizator. Cred ca este singurul apel a functiei in tot programul
 		GetNode<CanvasItem>("/root/Transition").Hide(); //A se vedea funtia logging din Logare.cs
-		Download += down;
+		Download += down;	//Conectam semnalul la functie
 		if(!_data.currentStats.Anims)
 		{	GetNode("UI/Bg/Bg").QueueFree();
 		}
@@ -52,7 +53,8 @@ public partial class Main : Node2D
 
 	// Called every frame. 'delta' is the elapsed time since the previous frame.
 	public override void _Process(double delta)
-	{	if(HasNode("UI/Bar")) 
+	{	//Ceasul
+		if(HasNode("UI/Bar")) 
 		{
 			GetNode<Label>("UI/Bar/HBoxContainer/Time").Text = Time.GetTimeStringFromSystem();
 			GetNode<Label>("UI/Bar/HBoxContainer/Time").TooltipText = Time.GetDateStringFromSystem();
@@ -67,7 +69,7 @@ public partial class Main : Node2D
 
 	//Semnal pentru NewVer.cs ca sa nu poata utilizatorul sa paraseasca scena Main
 	private void down(int mode)
-	{	if(mode ==1)
+	{	if(mode ==1)	//Descarcarea este in desfasurare
 		{	
 			#if GODOT_LINUXBSD || GODOT_WINDOWS
 				GetNode<TextureButton>("UI/Bar/HBoxContainer/Power").Disabled = true;
@@ -79,7 +81,7 @@ public partial class Main : Node2D
 			GetNode<Button>("UI/Panel/Buttons/Quizzes").Disabled = true;
 			GetNode<Button>("UI/Panel/Buttons/Settings").Disabled = true;
 		}
-		else
+		else	//Descarcarea s-a terminat
 		{	
 			#if GODOT_LINUXBSD || GODOT_WINDOWS
 				GetNode<TextureButton>("UI/Bar/HBoxContainer/Power").Disabled = false;
@@ -94,7 +96,7 @@ public partial class Main : Node2D
 	}
 
 	private void _on_quit_pressed() => GetTree().Quit(0);
-	private void _on_logout_pressed()
+	private void _on_logout_pressed()	//Delogare
 	{
 		GD.Print("Delogare: " + _data.LoggedUser);
 		_data.verifiedver = false;
@@ -105,12 +107,13 @@ public partial class Main : Node2D
 		DisplayServer.WindowSetVsyncMode(DisplayServer.VSyncMode.Enabled);
 		GetTree().ChangeSceneToFile("res://Scenes/Logare.tscn");
 	}
-	private void _on_notification_pressed()
+	private void _on_notification_pressed()	//Apare fereastra pentru o noua versiune
 	{	var newver = (GD.Load<PackedScene>("res://Scenes/NewVer.tscn")).Instantiate();
 		newver.GetNode<Label>("Panel/Panel/ScrollContainer/VBoxContainer/Title2").Text = newver.GetNode<Label>("Panel/Panel/ScrollContainer/VBoxContainer/Title2").Text + (String)ProjectSettings.GetSetting("application/config/version") + "\nVersiunea actuala este: " + _data.newversion[0] + "\n ";
 		newver.GetNode<Label>("Panel/Panel/ScrollContainer/VBoxContainer/HBoxContainer2/Title3").Text = _data.newversion[1];
 		AddChild(newver);
 	}
+	//Cele patru functii corespund celor patru butoane din centru
 	private void _on_course_pressed() => AddChild((GD.Load<PackedScene>("res://Scenes/Courses.tscn")).Instantiate());
 
 	private void _on_settings_pressed() => AddChild((GD.Load<PackedScene>("res://Scenes/Settings.tscn")).Instantiate());
@@ -118,12 +121,13 @@ public partial class Main : Node2D
 	private void _on_quizzes_pressed() => AddChild((GD.Load<PackedScene>("res://Scenes/Quizzes.tscn")).Instantiate());
 	private void _on_progress_pressed() => AddChild((GD.Load<PackedScene>("res://Scenes/Progress.tscn")).Instantiate());
 
+	//Daca a fost primit un raspuns de la _request
 	private void OnRequestCompleted(long result, long responseCode, string[] headers, byte[] body)
 	{	if(result == 0)
-		{	string data = System.Text.Encoding.UTF8.GetString(body);                                                                               //tot ce este in version.txt
+		{	string data = System.Text.Encoding.UTF8.GetString(body);		//tot ce este in version.txt
 			_data.newversion.Clear();
-			_data.newversion.Add(data.Substring(0, data.IndexOf(";", 0)));                                                                         //Versiunea programului
-			_data.newversion.Add(data.Substring(data.IndexOf("-", 0)));                                                                            //Textul fara versiunea programului
+			_data.newversion.Add(data.Substring(0, data.IndexOf(";", 0)));		//Versiunea programului
+			_data.newversion.Add(data.Substring(data.IndexOf("-", 0)));		//Textul fara versiunea programului
 			if(!((String)ProjectSettings.GetSetting("application/config/version")).Contains(_data.newversion[0]) && _data.currentStats.ChkUpdates) //Daca versiunea programului corespunde cu versiunea din version.txt
 			{
 				GD.Print("Versiune veche");

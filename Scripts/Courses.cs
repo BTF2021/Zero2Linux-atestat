@@ -1,3 +1,4 @@
+//Folosit pentru fereastra cu lectiile
 using Godot;
 using System;
 
@@ -5,10 +6,11 @@ public partial class Courses : Control
 {
 	// Called when the node enters the scene tree for the first time.
 	private DefaultData _data;
-	private VBoxContainer _VBoxContainer;
-	private PackedScene _courseitem;
-	private CourseItem _panel;
-	public int selected;
+	private VBoxContainer _VBoxContainer;	//Punem lectiile in acest container
+	private PackedScene _courseitem;	//Scena pentru item
+	private CourseItem _panel;	//Itemul propriu-zis, dupa ce setam indexul lectiei, numele, tagul,...	
+
+	//Ultimele tre variante sunt pentru miscarea ferestrei
 	private Vector2 mousepos;
 	private bool inputgrab;
 	private Vector2 dif;
@@ -41,7 +43,8 @@ public partial class Courses : Control
 	}
 	// Called every frame. 'delta' is the elapsed time since the previous frame.
 	public override void _Process(double delta)
-	{	mousepos = GetViewport().GetMousePosition();
+	{	//Pentru miscarea ferestrei
+		mousepos = GetViewport().GetMousePosition();
 		var winpos = GetNode<Sprite2D>("Panel").Position;
 		var newpos = Position;
 		//Pozitia este raportata la centrul ferestrei
@@ -51,9 +54,11 @@ public partial class Courses : Control
 		{	GetNode<Sprite2D>("Panel").Position = newpos;
 		}
 	}
-	//Daca pui aceasta functie in while, toate CourseItem o sa redirectioneze in Lesson_16 sau in _panel.lesson (Lesson_15)
+	//Aceasta functie este pentru adaugarea lectiilor.
+	//Daca pui aceste instructiuni in structura while din _Ready(), toate CourseItem-urile o sa redirectioneze in Lesson_<ultimul index + 1> sau in _panel.lesson (Lesson_<ultimul index>)
 	private void AddItem(int i)
 	{	_panel =  _courseitem.Instantiate<CourseItem>();
+		//Pur si simplu setam valorile din _panel pentru lectia dorita
 		_panel.lesson = i;
 		_panel.Name = "CourseItem" + i;
 		_panel.lessonName = (string)_data.lessonList[i][0];
@@ -61,11 +66,13 @@ public partial class Courses : Control
 		_panel.complete = (int)_data.currentStats.LessonCompletion[i];
 		_panel.GetNode<ProgressBar>("PanelContainer/Percentage").Value = _panel.complete;
 		_panel.lessonTag = (int)_data.lessonList[i][1];
+		//Verificare daca utilizatorul doreste sa ascunda anumite lectii din lista
 		if(!_data.currentStats.Adv && (_panel.lessonTag == 1 || _panel.lessonTag == 3)) return;
 		if(!_data.currentStats.Spc && (_panel.lessonTag == 2 || _panel.lessonTag == 3)) return;
+		//Afiseaza tagul corespunzator tipului de lectie
 		if(_panel.lessonTag == 1 || _panel.lessonTag == 3) _panel.GetNode<TextureRect>("PanelContainer/Adv").Show();
 		if(_panel.lessonTag == 2 || _panel.lessonTag == 3) _panel.GetNode<TextureRect>("PanelContainer/Spc").Show();
-		_VBoxContainer.AddChild(_panel);
+		_VBoxContainer.AddChild(_panel);	//Adauga lectia in lista
 		//Daca lectia cu nr i exista, conecteaza semnalul Pressed la functie. Altfel dezactiveaza
 		if(ResourceLoader.Exists("res://Courses/Lesson_" + i + "/Lesson.tscn")) _panel.GetNode<Button>("Panel").Pressed += () => PanelPressed(i);
 		else
@@ -74,12 +81,12 @@ public partial class Courses : Control
 		}
 		GD.Print("Adaugat " + _panel.lessonName);
 	}
-	private void _on_back_pressed() => QueueFree();
-	private void PanelPressed(int index)
+	private void _on_back_pressed() => QueueFree();	//Inchide fereastra
+	private void PanelPressed(int index)	//Incarca lectia
 	{	_data.CurrentLesson = index;
 		_data.LoadScene("res://Scenes/Lesson.tscn");
 	}
-	private void _on_drag_down()
+	private void _on_drag_down()	//Cand partea de sus a ferestrei este apasata
 	{	GD.Print("Hi");
 		#if GODOT_ANDROID
 			//Desi mousepos este preluat in _Proccess(), mousepos ramane aceeasi valoare dupa ce ecranul a fost atins
@@ -94,7 +101,7 @@ public partial class Courses : Control
 		inputgrab = true;
 		GetParent().MoveChild(this, -1);
 	}
-	private void _on_drag_up()
+	private void _on_drag_up()	//Cand partea de sus a ferestrei nu mai este apasata
 	{	GD.Print("Bye");
 		inputgrab = false;
 	}

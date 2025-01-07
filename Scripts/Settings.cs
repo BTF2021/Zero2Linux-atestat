@@ -1,10 +1,11 @@
+//Pentru fereastra de setari
 using Godot;
 using System;
 [Tool]
 public partial class Settings : Control
 {
 	private DefaultData _data;
-	private HSlider _slider;
+	private HSlider _slider;	//sliderul pentru volum
 	private Vector2 mousepos;
 	private bool inputgrab;
 	private Vector2 dif;
@@ -16,6 +17,7 @@ public partial class Settings : Control
 		GetNode<LineEdit>("Panel/Settings/Altele/VBoxContainer/Name/NameEdit").Text = _data.currentStats.UsrName;
 		GetNode<ColorPickerButton>("Panel/Settings/Altele/VBoxContainer/FavColour/ColorButton").Color = _data.currentStats.FavColor;
 
+		//Daca nu putem reda videoclipurile, ascundem tot ce este legat de videoclipuri
 		if(!_data.isvideoavailable)
 		{	GetNode<Label>("Panel/Settings/Lectii/VBoxContainer/VideoVolume").QueueFree();
 			GetNode<Label>("Panel/Settings/Lectii/VBoxContainer/VideoVolume").Modulate = new Color((float)0.6, (float)0.6, (float)0.6, 1);
@@ -54,7 +56,8 @@ public partial class Settings : Control
 
 	// Called every frame. 'delta' is the elapsed time since the previous frame.
 	public override void _Process(double delta)
-	{	mousepos = GetViewport().GetMousePosition();
+	{	//Pentru miscarea ferestrei
+		mousepos = GetViewport().GetMousePosition();
 		var winpos = GetNode<Sprite2D>("Panel").Position;
 		var newpos = Position;
 		//Pozitia este raportata la centrul ferestrei
@@ -66,46 +69,50 @@ public partial class Settings : Control
 	}
 
 	private void _on_back_pressed() => QueueFree();
-
+	//Fullscreen
 	private void _on_fullscreen_pressed()
 	{	_data.currentStats.FullScr = !_data.currentStats.FullScr;
 		if(_data.currentStats.FullScr) DisplayServer.WindowSetMode(DisplayServer.WindowMode.Fullscreen);
 		else DisplayServer.WindowSetMode(DisplayServer.WindowMode.Windowed);
 		_data.WriteSave(_data.LoggedUser);
 	}
-
+	//VSync
 	private void _on_v_sync_button_pressed()
 	{	_data.currentStats.VSync = !_data.currentStats.VSync;
 		if(_data.currentStats.VSync) DisplayServer.WindowSetVsyncMode(DisplayServer.VSyncMode.Enabled);
 		else DisplayServer.WindowSetVsyncMode(DisplayServer.VSyncMode.Disabled);
 		_data.WriteSave(_data.LoggedUser);
 	}
-
+	//Animatii
 	private void _on_animations_pressed()
 	{
 		_data.currentStats.Anims = !_data.currentStats.Anims;
 		_data.WriteSave(_data.LoggedUser);
 	}
-
+	//Volumul videoclipurilor
 	private void _on_video_volume_value_changed(float value)
 	{	_data.currentStats.VideoVolume = value;
 		_data.WriteSave(_data.LoggedUser);
 	}
+	//Daca afisam lectiile avansate sau nu
 	private void _on_advanced_pressed()
 	{
 		_data.currentStats.Adv = !_data.currentStats.Adv;
 		_data.WriteSave(_data.LoggedUser);
 	}
+	//Daca afisam lectiile speciale sau nu
 	private void _on_special_pressed()
 	{
 		_data.currentStats.Spc = !_data.currentStats.Spc;
 		_data.WriteSave(_data.LoggedUser);
 	}
+	//Daca ascundem raspunsurile corecte si gresite in test sau nu
 	private void _on_snt_button_pressed()
 	{
 		_data.currentStats.QNumOnly = !_data.currentStats.QNumOnly;
 		_data.WriteSave(_data.LoggedUser);
 	}
+	//Daca includem lectiile avansate in chestionare sau nu
 	private void _on_iaq_button_pressed()
 	{
 		_data.currentStats.AdvQ = !_data.currentStats.AdvQ;
@@ -113,11 +120,13 @@ public partial class Settings : Control
 	}
 	private void _on_github_pressed() => OS.ShellOpen("https://github.com/BTF2021/Zero2Linux");
 	private void _on_issue_pressed() => OS.ShellOpen("https://github.com/BTF2021/Zero2Linux/issues");
+	//Daca verificam pentru o versiune noua sau nu
 	private void _on_updates_button_pressed()
 	{	_data.currentStats.ChkUpdates = !_data.currentStats.ChkUpdates;
 		GetNode<CheckButton>("Panel/Settings/Altele/VBoxContainer/GetUpdates/GetUpdatesButton").SetPressedNoSignal(_data.currentStats.ChkUpdates);
 		_data.WriteSave(_data.LoggedUser);
 	}
+	//Daca s-a schimbat numele
 	private void _on_name_changed(string new_text)
 	{	if(new_text.IndexOf(" ") >= 0) new_text = new_text.Remove(new_text.IndexOf(" "));
 		if(new_text.IndexOf("/") >= 0) new_text = new_text.Remove(new_text.IndexOf("/"));
@@ -131,6 +140,7 @@ public partial class Settings : Control
 		GetNode<LineEdit>("Panel/Settings/Altele/VBoxContainer/Name/NameEdit").Text = new_text;
 		GetNode<LineEdit>("Panel/Settings/Altele/VBoxContainer/Name/NameEdit").CaretColumn = new_text.Length;
 	}
+	//Functie pentru salvarea noului nume
 	private void _on_name_submitted(string new_text)
 	{
 		if(new_text.Length <= 0)
@@ -162,19 +172,22 @@ public partial class Settings : Control
 			}
 		}
 	}
+	//Pentru schimbarea culorii iconitei
 	private void _on_color_button(Color color)
 	{
 		_data.currentStats.FavColor = color;
 		_data.WriteSave(_data.LoggedUser);
 	}
+	//Pentru stergerea progresului. Apare o fereastra de confirmare
 	private void _on_delete_pressed()
 	{	var scene = (Confirm)GD.Load<PackedScene>("res://Scenes/Confirm.tscn").Instantiate();
 		scene.reason = 0;
 		AddChild(scene);
 	}
+	//Pentru linkuri
 	private void _on_notice_meta_clicked(Variant meta) => OS.ShellOpen((string)meta);
 
-	private void _on_drag_down()
+	private void _on_drag_down()	//Cand partea de sus a ferestrei este apasata
 	{	GD.Print("Hi");
 		#if GODOT_ANDROID
 			//Desi mousepos este preluat in _Proccess(), mousepos ramane aceeasi valoare dupa ce ecranul a fost atins
@@ -189,7 +202,7 @@ public partial class Settings : Control
 		inputgrab = true;
 		GetParent().MoveChild(this, -1);
 	}
-	private void _on_drag_up()
+	private void _on_drag_up()	//Cand partea de sus a ferestrei nu mai este apasata
 	{	GD.Print("Bye");
 		inputgrab = false;
 	}

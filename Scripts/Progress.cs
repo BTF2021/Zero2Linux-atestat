@@ -1,11 +1,12 @@
+//Pentru fereastra de progres
 using Godot;
 using System;
 
 public partial class Progress : Control
 {
 	private DefaultData _data;
-	private VBoxContainer _item;
-	private int spc, unfinished;
+	private VBoxContainer _item;	//Itemul-model
+	private int spc, unfinished;	//Variabile locale pentru numararea lectiilor speciale, respectiv cele neterminate
 	private Vector2 mousepos;
 	private bool inputgrab;
 	private Vector2 dif;
@@ -68,7 +69,8 @@ public partial class Progress : Control
 
 	// Called every frame. 'delta' is the elapsed time since the previous frame.
 	public override void _Process(double delta)
-	{	mousepos = GetViewport().GetMousePosition();
+	{	//Pentru miscarea ferestrei
+		mousepos = GetViewport().GetMousePosition();
 		var winpos = GetNode<Sprite2D>("Panel").Position;
 		var newpos = Position;
 		//Pozitia este raportata la centrul ferestrei
@@ -76,8 +78,8 @@ public partial class Progress : Control
 		newpos.Y = Mathf.Clamp(Mathf.Lerp(winpos.Y, mousepos.Y + dif.Y, 1), 279, 920);
 		if(inputgrab) GetNode<Sprite2D>("Panel").Position = newpos;
 	}
-	private void _on_back_pressed() => QueueFree();
-	private void _on_drag_down()
+	private void _on_back_pressed() => QueueFree();		//Inchide fereastra
+	private void _on_drag_down()	//Cand partea de sus a ferestrei este apasata
 	{	GD.Print("Hi");
 		#if GODOT_ANDROID
 			//Desi mousepos este preluat in _Proccess(), mousepos ramane aceeasi valoare dupa ce ecranul a fost atins
@@ -92,10 +94,11 @@ public partial class Progress : Control
 		inputgrab = true;
 		GetParent().MoveChild(this, -1);
 	}
-	private void _on_drag_up()
+	private void _on_drag_up()	//Cand partea de sus a ferestrei nu mai este apasata
 	{	GD.Print("Bye");
 		inputgrab = false;
 	}
+	//Buton pentru aratarea/ascunderea subcategoriilor
 	private void _on_button_pressed(Node _node)
 	{	_node.GetNode<HBoxContainer>("SubContainer").Visible = !_node.GetNode<HBoxContainer>("SubContainer").Visible;
 		_node.GetNode<TextureRect>("Panel/Contents/Arrow").FlipV = !_node.GetNode<TextureRect>("Panel/Contents/Arrow").FlipV;

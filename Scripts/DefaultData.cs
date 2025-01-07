@@ -1,3 +1,5 @@
+//Clasa speciala pentru accesarea datelor legate de utilizator si de lectii
+//Acest script trebuie sa fie incarcat la deschiderea programului (Autoload), iar accesarea se face prin definirea unei variabile in script
 using Godot;
 using System;
 using Newtonsoft.Json;
@@ -5,14 +7,14 @@ using Newtonsoft.Json;
 //clasa pentru a salva setari si progres. De ce am facut asta? Ca sa se salveze frumos in format JSON
 public class stats
 {
-	public int version = 5;
-	public string UsrName = " ";
-	public Color FavColor = new Color(1, 1, 1, 1);
-	public bool FullScr = false;
-	public bool VSync = true;
-	public bool Anims = true;
-	public int FinishedLes = 0;
-	public Godot.Collections.Dictionary<int, double> LessonCompletion = new Godot.Collections.Dictionary<int, double>() 
+	public int version = 5;		//"Versiunea" fisierului. Mai mult pentru compatibilitate atunci cand se actualizeaza la o versiune noua care schimba clasa stats
+	public string UsrName = " ";	//Numele utilizatorului
+	public Color FavColor = new Color(1, 1, 1, 1);	//Culoarea fundalului
+	public bool FullScr = false;	//Daca programul este Fullscreen sau nu
+	public bool VSync = true;	//Daca VSync este activat sau nu
+	public bool Anims = true;	//Daca majoritatea animatiilor sunt prezente sau nu
+	public int FinishedLes = 0;		//Cate lectii sunt terminate
+	public Godot.Collections.Dictionary<int, double> LessonCompletion = new Godot.Collections.Dictionary<int, double>() 	//Lectiile si cat la suta sunt terminate
 	{
 		{1, 0},
 		{2, 0},
@@ -26,17 +28,17 @@ public class stats
 	public int goodtests = 0;         //Nr teste peste 5
 	public int greattest = 0;         //Nr teste peste 7
 	public int flawlesstests = 0;     //Nr teste fara greseli
-	public bool Adv = true;
-	public bool Spc = true;
+	public bool Adv = true;			  //Daca lectiile avansate sunt prezente in lista de lectii sau nu
+	public bool Spc = true;			  //Daca lectiile speciale sunt prezente in lista de lectii sau nu
 	public float VideoVolume = 0;	  //Intre -60 si 0
-	public bool QNumOnly = false;
-	public bool AdvQ = true;
-	public bool ChkUpdates = false;
+	public bool QNumOnly = false;	  //Daca nr de raspunse corecte si gresite sa fie afisate in modul test sau nu
+	public bool AdvQ = true;		  //Daca intrebariile din lectiile avansate sa fie incluse in chestionare sau nu
+	public bool ChkUpdates = false;	  //Daca doresti sa verifici daca exista o noua versiune a programului
 }
 public partial class DefaultData : Node
 {
 	//De aici vor fi accesate si salvate setarile si progresul
-	public stats currentStats = new stats();
+	public stats currentStats = new stats();		  //Variabila in care punem statisticile unui anumit user
 	private stats defaultStats = new stats();         //Duplicat pentru currentStats (Mai mult pentru versiune)
 
 	public Godot.Collections.Dictionary<int, Godot.Collections.Array> lessonList = new Godot.Collections.Dictionary<int, Godot.Collections.Array>() 
@@ -88,18 +90,18 @@ public partial class DefaultData : Node
 			{5, new Godot.Collections.Array{4, 3, "Care este formatul cel mai portabil", "Deb si Rpm", "Flatpak", "AppImage", "Snap", "AppImage contine programul + toate librariile necesare intr-un singur fisier."}}
 		}}
 	};
-    //valori care nu ar trebui schimbate
-	public string LoggedUser = " ";
-    public bool verifiedver = false;
-	public bool isvideoavailable = false;
-	public int CurrentLesson = 0;
-	public int questiontype = 0;
+    //valori care nu ar trebui schimbate direct de utilizator. Se pot strica multe
+	public string LoggedUser = " ";		//Utilizatorul logat. Folosit pentru salvarea si stergerea progresului
+    public bool verifiedver = false;	//Daca a fost cautata o noua versiune a programului
+	public bool isvideoavailable = false;	//Daca se pot reda videoclipurile din lectii
+	public int CurrentLesson = 0;	//Lectia curenta
+	public int questiontype = 0;	//Tipul de intrebare (din chestionar sau din test)
 	//Vector pentru retinerea informatiilor privind versiunea noua de pe Github
 	public Godot.Collections.Array<String> newversion = new Godot.Collections.Array<String>{};
 
     public override void _Ready()
 	{	
-		//Determinam daca putem reda videoclipuri. Daca nu (incercam sa) dezactivam optiunea
+		//Determinam daca putem reda videoclipuri. Daca nu, (incercam sa) dezactivam optiunea
 		#if GODOT_LINUXBSD
 			#if TOOLS
 				if(DirAccess.DirExistsAbsolute("res://addons/ffmpeg/linux64"))isvideoavailable=true;
@@ -139,6 +141,7 @@ public partial class DefaultData : Node
 
 		GD.Print("Videouri disponibile: " + isvideoavailable);
 	}
+	//Verificam daca exista un utilizator
 	public bool SaveExists()
 	{	System.Array filearray = DirAccess.GetFilesAt("user://");
 		for (int i = 0; i < filearray.Length; i++)
@@ -150,6 +153,7 @@ public partial class DefaultData : Node
 		GD.Print("Exista fisier: false. Creeaza un nou save.json");
 		return false;
 	}
+	//Functie pentru preluarea numelor utilizatorilor. Problema ar fi ca noi ne folosim de numele fisierului in loc sa citim in fisiere si de acolo sa preluam numele
 	public System.Array GetSaves()
 	{	System.Array filearray = DirAccess.GetFilesAt("user://");
 		var length = filearray.Length;
@@ -159,44 +163,50 @@ public partial class DefaultData : Node
 		for (int i = 0; i < length; i++)
 			if(((string)(filearray.GetValue(i))).EndsWith("_save.json"))     					 //Ceva stupid. filearray.GetValue(i) trebuie sa fie string ca sa poate folosi Contains()
 			{	var pos = ((string)(filearray.GetValue(i))).Find("_save.json");					 //Aflam pozitia _save.json
-				savenames.SetValue(((string)(filearray.GetValue(i))).Substr(0, pos), i);         //Facem un subsir pana la _save.json si-l bagam in vector
+				savenames.SetValue(((string)(filearray.GetValue(i))).Substr(0, pos), i);         //Facem un subsir pana la _save.json si-l bagam in vector. Rezulta numele utilizatorului
 				GD.Print(savenames.GetValue(i));
 			}
 		return savenames;
 	}
+	//Functie pentru salvarea progresului unui utilizator
 	public void WriteSave(string user)
-	{	int i = 1;
+	{	//calculam numarul de lectii terminate
+		int i = 1;
 		while(lessonList.ContainsKey(i))
 		{	if((int)currentStats.LessonCompletion[i] == 100 && (int)lessonList[i][1] != 2) currentStats.FinishedLes++;
 			i++;
 		}
+		//Salvam in fisier
 		var file = FileAccess.Open("user://" + user + "_save.json", FileAccess.ModeFlags.Write);
 		if (file == null) GD.Print("Nu se poate deschide fisierul. Eroare: " + FileAccess.GetOpenError());
 		file.StoreString(JsonConvert.SerializeObject(currentStats));
 		file.Close();
 	}
+	//Functie pentru citirea progresului unui utilizator
 	public void ReadSave(string user)
-	{	var file = FileAccess.Open("user://" + user + "_save.json", FileAccess.ModeFlags.Read);
+	{	//Citim fisierul
+		var file = FileAccess.Open("user://" + user + "_save.json", FileAccess.ModeFlags.Read);
 		if (file == null) GD.Print("Nu se poate deschide fisierul. Eroare: " + FileAccess.GetOpenError());
 		stats content = JsonConvert.DeserializeObject<stats>(file.GetAsText());
 		file.Close();
-		currentStats = content;
+		currentStats = content;		//Punem ce am citit in currentStats, ca sa nu citim de mai multe ori pentru o singura variabila
 		if(currentStats.version < defaultStats.version) UpgradeSaveFile(user);
+		//Pentru Fullscreen si VSync
 		if(currentStats.FullScr) DisplayServer.WindowSetMode(DisplayServer.WindowMode.Fullscreen);
 		else DisplayServer.WindowSetMode(DisplayServer.WindowMode.Windowed);
 		if(currentStats.VSync) DisplayServer.WindowSetVsyncMode(DisplayServer.VSyncMode.Enabled);
 		else DisplayServer.WindowSetVsyncMode(DisplayServer.VSyncMode.Disabled);
 	}
-	//Functie pentru stergerea unui progres
+	//Functie pentru stergerea progresului unui utilizator
 	public void DeleteSave(string user)
 	{
-		DirAccess.RemoveAbsolute("user://" + user + "_save.json");             //Trebuie sa fie functie statica
+		DirAccess.RemoveAbsolute("user://" + user + "_save.json");             //Stergem fisierul. Trebuie sa fie functie statica
 		LoggedUser = " ";
-		//Restul este mai mult pentru delogare
+		//Setam Fullscreen si VSync la valorile obisnuite
 		DisplayServer.WindowSetMode(DisplayServer.WindowMode.Windowed);
 		DisplayServer.WindowSetVsyncMode(DisplayServer.VSyncMode.Enabled);
-		currentStats = new stats();
-		GetTree().ChangeSceneToFile("res://Scenes/Logare.tscn");
+		currentStats = new stats();		//Curatam progresul. De aici, progresul nu mai exista
+		GetTree().ChangeSceneToFile("res://Scenes/Logare.tscn");	//Treci inapoi la ecranul de logare
 	}
 	//Functie pentru actualizarea progresului in functie de versiunea fisierului
 	public void UpgradeSaveFile(string user)

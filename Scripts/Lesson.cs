@@ -1,18 +1,19 @@
+//Folosit pentru lectii
 using Godot;
 using System;
 
 public partial class Lesson : Node2D
 {
 	private DefaultData _data;
-	public Node _node;
-	public Godot.Collections.Array<Quizitem> _questions;
+	public Node _node;	//Containerul in care sunt puse elementele lectiei (text, intrebari,...)
+	public Godot.Collections.Array<Quizitem> _questions;	//Vector cu toate intrebarile din lectie
 	public int lessonid = 0;
-	private int totalquestioncount;    //Nr total de intrebari din lectie
-	private int totallessonblocks;	   //Nr total de blocuri din lectie
-	private int questionansw;          //Nr de intrebari deja raspunse
-	private int blocksread;			   //Nr de blocuri deja vazute
-	private int percent;               //Procentul progresului
-	[Signal] public delegate void GetAnswersEventHandler(bool correct, bool ignore, int index);
+	private int totalquestioncount;		//Nr total de intrebari din lectie
+	private int totallessonblocks;		//Nr total de blocuri din lectie (Un bloc poate contine text, imagini, separatoare etc). Separatoarele se pot pune si intre blocuri si intrebari
+	private int questionansw;		//Nr de intrebari deja raspunse
+	private int blocksread;			//Nr de blocuri deja vazute
+	private int percent;		//Procentul progresului
+	[Signal] public delegate void GetAnswersEventHandler(bool correct, bool ignore, int index);	//Semnal pentru intrebarile din lectie
 
 	public async void _Treeentered() => _Ready();
 	// Called when the node enters the scene tree for the first time.
@@ -20,12 +21,12 @@ public partial class Lesson : Node2D
 	{
 		_data = (DefaultData)GetNode("/root/DefaultData");
 		lessonid = _data.CurrentLesson;
-		GetNode<Control>("Panel/ScrollContainer/MarginContainer/Body").AddChild((GD.Load<PackedScene>("res://Courses/Lesson_" + lessonid + "/Lesson.tscn")).Instantiate());
+		GetNode<Control>("Panel/ScrollContainer/MarginContainer/Body").AddChild((GD.Load<PackedScene>("res://Courses/Lesson_" + lessonid + "/Lesson.tscn")).Instantiate());	//Lectia propriu-zisa
 		_questions = new Godot.Collections.Array<Quizitem>{};
 		_node = GetNode<VBoxContainer>("Panel/ScrollContainer/MarginContainer/Body/Content");
-		GetAnswers += SendAnswers;
+		GetAnswers += SendAnswers;	//Conecteaza semnalul la functie
 
-		//Daca nu putem reda videoclipurile, ramane doar imaginea cu blur
+		//Daca nu putem reda videoclipurile, ramane doar imaginea
 		if(!ResourceLoader.Exists("res://Courses/Lesson_" + lessonid + "/VidBg.png"))
 		{	GetNode<HSeparator>("Panel/ScrollContainer/MarginContainer/Body/HSeparator2").QueueFree();
 			GetNode<ColorRect>("Panel/ScrollContainer/MarginContainer/Body/VideoPreview/Spoiler").QueueFree();
@@ -92,7 +93,7 @@ public partial class Lesson : Node2D
 				//Daca am ajuns la progresul din save.json
 				if(calc == _data.currentStats.LessonCompletion[lessonid])
 				{
-					showobjects(i);
+					ShowObjects(i);
 					break;
 				}
 				GD.Print(questionansw + "/" + totalquestioncount + " " + blocksread + "/" + totallessonblocks + " " + (questionansw + blocksread) * 100 / (totalquestioncount + totallessonblocks));
@@ -181,7 +182,7 @@ public partial class Lesson : Node2D
 	*/
 
 	//Aceasta functie arata partile din lectie pana la o intrebare la care nu sa raspuns/ nu sa raspuns corect
-	private async void showobjects(int index)
+	private async void ShowObjects(int index)
 	{	var foundquestion = false;
 		for (int i = index; i <= _node.GetChildCount()-1; i++)
 		{	if(foundquestion) _node.GetChild<CanvasItem>(i).Visible = false;
@@ -205,7 +206,7 @@ public partial class Lesson : Node2D
 		{	//Daca nu a fost deja raspuns
 			if(!_node.GetChild<Quizitem>(index).Complete)
 			{
-				showobjects(index+1);
+				ShowObjects(index+1);
 				_node.GetChild<Quizitem>(index).Complete = true;
 
 				//Calculam cat la suta din lectie a fost citita si-l salvam progresul
@@ -231,19 +232,22 @@ public partial class Lesson : Node2D
 			tween.TweenProperty(_node.GetChild<CanvasItem>(index), "modulate", new Color(1, 1, 1, 1), 0.5);
 		}
 	}
+	//Butonul pentru intoarcerea in meniul principal
 	private void _on_back_pressed()
 	{	GD.Print("Pressed");
 		GetTree().ChangeSceneToFile("res://Scenes/Main.tscn");
 	}
+	//Cand apesi pe play
 	private void _on_watch_pressed()
 	{	var _video = (ResourceLoader.Load<PackedScene>("res://Scenes/VideoOverlay.tscn")).Instantiate();
-		_video.GetNode<VideoStreamPlayer>("Panel/VideoStreamPlayer").Stream.File = "res://Courses/Lesson_" + lessonid + "/Video.webm";
-		_video.GetNode<Sprite2D>("Bg").Texture = GD.Load<CompressedTexture2D>("res://Courses/Lesson_" + lessonid + "/VidBg.png");
+		_video.GetNode<VideoStreamPlayer>("Panel/VideoStreamPlayer").Stream.File = "res://Courses/Lesson_" + lessonid + "/Video.webm";	//Incarcam videoclipul dorit
+		_video.GetNode<Sprite2D>("Bg").Texture = GD.Load<CompressedTexture2D>("res://Courses/Lesson_" + lessonid + "/VidBg.png");	//Fundalul de dinainte sa dai play (VideoOverlay)
 		AddChild(_video);
 	}
 	//Pentru linkurile din text
 	private void _on_text_link(Variant meta)
-	{	var scene = (Confirm)GD.Load<PackedScene>("res://Scenes/Confirm.tscn").Instantiate();
+	{	//Creeaza o fereastra de confirmare
+		var scene = (Confirm)GD.Load<PackedScene>("res://Scenes/Confirm.tscn").Instantiate();
 		scene.reason = 2;
 		scene.link = (string)meta;
 		AddChild(scene);

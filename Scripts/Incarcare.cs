@@ -1,18 +1,19 @@
+//Folosit pentru incarcarea scenelor, cum ar fi lectiile si chestionarele (desi nu dureaza mult incarcarea)
 using Godot;
 using System;
 
 public partial class Incarcare : Node2D
 {
 	private DefaultData _data;
-	[Export]public string target;
+	[Export]public string target;			//Scena incarcata
 	private bool done;						//Pentru avertizarile legate de Tweenuri
-	public Godot.Collections.Array progress;
+	public Godot.Collections.Array progress;	//Progresul
 	public override async void _Ready()
 	{	_data = (DefaultData)GetNode("/root/DefaultData");
 		GetNode<RichTextLabel>("Tip").Text = "[center]";
 		done = false;
 		GD.Print(target);
-		Godot.Collections.Array<string> splash = new Godot.Collections.Array<string>(){
+		Godot.Collections.Array<string> splash = new Godot.Collections.Array<string>(){		//Mesajele de mai jos. Se alege unul la intamplare
 			"Se incarca...",
 			"Insereaza un text aici",
 			"Acest text este [i]pseudo[/i]-aleatoriu",
@@ -49,7 +50,7 @@ public partial class Incarcare : Node2D
 		if(tip==size)
 		{
 			var name = "";
-			switch(OS.GetName())
+			switch(OS.GetName())	//Mesajul este in functie de sistemul de operare
 			{	case "Windows":
 					name = "Poti incerca o distributie de linux intr-o masina virtuala sau intr-un container";
 					break;
@@ -71,7 +72,7 @@ public partial class Incarcare : Node2D
 		else if(Time.GetDatetimeStringFromSystem().Find("12", 4) == 5 && Time.GetDatetimeStringFromSystem().Find("28", 7) == 8) GetNode<RichTextLabel>("Tip").Text = "[center]La multi ani Linus Torvalds![/center]";
 
 		GetNode<ProgressBar>("Bara").Value = 0;
-		ResourceLoader.LoadThreadedRequest(target);
+		ResourceLoader.LoadThreadedRequest(target);	//Cere incarcarea scenei pe un alt thread
 		if(_data.currentStats.Anims)
 		{	GetNode<Node2D>(".").Modulate = new Color(1, 1, 1, 0);
 			var tween = GetTree().CreateTween();
@@ -81,7 +82,7 @@ public partial class Incarcare : Node2D
 
 	// Called every frame. 'delta' is the elapsed time since the previous frame.
 	public override void _Process(double delta)
-	{	if(!GetNode<AnimationPlayer>("Icon/Animation").IsPlaying()) GetNode<AnimationPlayer>("Icon/Animation").Play("Rotate");
+	{	if(!GetNode<AnimationPlayer>("Icon/Animation").IsPlaying()) GetNode<AnimationPlayer>("Icon/Animation").Play("Rotate");	//Roteste iconita
 		var status = ResourceLoader.LoadThreadedGetStatus(target, progress);
 		switch(status)
 		{

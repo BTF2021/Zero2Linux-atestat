@@ -1,3 +1,4 @@
+//Clasa pentru intrebarii. Acestea pot aparea fie in chestionare, fie in lectii
 using Godot;
 using System;
 
@@ -6,9 +7,9 @@ public partial class Quizitem : PanelContainer
 	public int type = 0;         //0: Lectie,        1: Normal,       2: Test        O schimbam cand initializam scena corespunzatoare
 	[Export(PropertyHint.Range, "2,4,")] public int answnum = 4;      //Nr de raspunsuri posibile (intre 2 si 4)
 	[Export(PropertyHint.Range, "1,4,")] public int answ = 1;
-	public bool Complete = false;
-	public int Index = 0;                 //Mai mult pentru GetChild()
-
+	public bool Complete = false;	//Pentru lectii
+	public int Index = 0;	//Mai mult pentru GetChild()
+	//Intrebarea, respectiv variantele de raspuns si explicatia
 	[Export] public string question = "";
 	[Export] public string answer1 = "";
 	[Export] public string answer2 = "";
@@ -25,7 +26,7 @@ public partial class Quizitem : PanelContainer
 		
 		if(answnum < 2 || answnum > 4) answnum = 4;
 		if(answ > answnum) answ = answnum;
-		//Cate raspunsuri posibile sunt
+		//Cate raspunsuri posibile sunt 2, 3 si 4
 		switch(answnum)
 		{	case 2:
 				GetNode<CheckBox>("PanelContainer/Raspuns3").Disabled = true;
@@ -49,7 +50,8 @@ public partial class Quizitem : PanelContainer
 
 	// Called every frame. 'delta' is the elapsed time since the previous frame.
 	public override void _Process(double delta)
-	{	var pressed = false;
+	{	//Ca sa nu trimiti raspunsul fara sa alegi o optiune
+		var pressed = false;
 		for (int i = 1; i <=4; i++) if(GetNode<CheckBox>("PanelContainer/Raspuns" + i).ButtonPressed == true) pressed = true;
 		GetNode<Button>("PanelContainer/HBoxContainer/Send").Disabled = !pressed;
 	}

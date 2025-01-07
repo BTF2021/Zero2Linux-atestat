@@ -1,36 +1,38 @@
+//Pentru chestionare (modurile Antrenament si Test)
 using Godot;
 using System;
 
 public partial class Quizztime : Node2D
 {
 	private DefaultData _data;
-	public PackedScene _item;
+	public PackedScene _item;	//Intrebare
 	public Node2D _transition;
-	Godot.Collections.Array<Godot.Collections.Array> _list;
+	Godot.Collections.Array<Godot.Collections.Array> _list;		//Lista cu intrebari
 	int total = 10;
 	int intrebari = 0;
 	int corecte = 0;
 	int gresite = 0;
 	int timp = 120; //Timpul de rezolvare
-	Godot.Collections.Array chars = new Godot.Collections.Array(){"/", "%", "&", "$", "@", "$", "#", "(", ")", "-", "0", "O"};   //Pentru efectul de glitch
-	string randomstr = "";
+	Godot.Collections.Array chars = new Godot.Collections.Array(){"/", "%", "&", "$", "@", "$", "#", "(", ")", "-", "0", "O"};   //Pentru efectul de glitch. Probabil o sa fac o functie globala in DefaultData
+	string randomstr = "";	//Tot pentru efectul de glitch
 	public Timer timer;
 	public Timer timp_ramas;
 	TimeSpan tp;
-	[Signal] public delegate void GetAnswersEventHandler(bool correct, bool ignore, int index);
-	[Signal] public delegate void SkipEventHandler();
-	[Signal] public delegate void NextEventHandler();
+	[Signal] public delegate void GetAnswersEventHandler(bool correct, bool ignore, int index);	//Semnal pentru intrebarile din lectie
+	[Signal] public delegate void SkipEventHandler();	//Semnal pentru trecerea peste o intrebare
+	[Signal] public delegate void NextEventHandler();	//Semnal pentru trecerea la urmatoarea intrebare
 	// Called when the node enters the scene tree for the first time.
 	public async override void _Ready()
 	{	_data = (DefaultData)GetNode("/root/DefaultData");
 		_item = GD.Load<PackedScene>("res://Scenes/Quizitem.tscn");
 		_transition = GetNode<Node2D>("Transition");
+		//Conectam semnalele la functiile lor
 		GetAnswers += SendAnswers;
 		Skip += SkipQuestion;
 		Next += NextQuestion;
-		_list = _data.GenerateQuestionSet(total);
+		_list = _data.GenerateQuestionSet(total);	//Genereaza lista de intrebari
 		GD.Print(_list);
-		if(_data.questiontype == 1)
+		if(_data.questiontype == 1)	//Daca este test
 		{	GetNode<Label>("Body/Title").Text = "Test";
 			GetNode<RichTextLabel>("Body/Correct").TooltipText = "Eroare: nr_intrebari_corecte nu poate fi afisat";
 			GetNode<RichTextLabel>("Body/Wrong").TooltipText = "Eroare: nr_intrebari_gresite nu poate fi afisat";
@@ -85,30 +87,32 @@ public partial class Quizztime : Node2D
 			await ToSignal(tween, Tween.SignalName.Finished);
 			if(_data.questiontype == 1) timp_ramas.Paused = false;
 		}
-		NextQuestion();
+		NextQuestion();	//Treci la prima intrebare
 	}
 
 	// Called every frame. 'delta' is the elapsed time since the previous frame.
 	public override void _Process(double delta)
-	{	GetNode<Label>("Body/Number").Text = "Intrebare: " + intrebari + "/" + total;
+	{	//Afisarea textelor de sus
+		GetNode<Label>("Body/Number").Text = "Intrebare: " + intrebari + "/" + total;
 		if(_data.questiontype == 0)
 		{	GetNode<RichTextLabel>("Body/Correct").Text = "Corecte: " + corecte;
 			GetNode<RichTextLabel>("Body/Wrong").Text = "Gresite: " + gresite;
 		}
-		else if(_data.questiontype == 1)
+		else if(_data.questiontype == 1)	//Timerul pentru test
 		{	tp = TimeSpan.FromSeconds(timp_ramas.TimeLeft);
 			GetNode<Label>("Body/RemainedTime").Text = "Timp ramas: " + tp.ToString("mm\\:ss");
 			if(timp_ramas.TimeLeft <= (float)6.0) GetNode<Label>("Body/RemainedTime").SelfModulate = new Color(1, 0, 0, 1);
 			else if(timp_ramas.TimeLeft <= (float)11.0) GetNode<Label>("Body/RemainedTime").SelfModulate = new Color(1, 1, 0, 1);
 		}
 	}
-	private void _on_continue_pressed()
+	private void _on_continue_pressed()	//Butonul pentru continuare, cand este afisata si explicatia
 	{	GetNode<Button>("Continue").Hide();
 		NextQuestion();
 	}
 
 	private void _on_back_pressed()
-	{	GD.Print("Pressed");
+	{	//Creeaza o fereastra de confirmare, daca s-a raspuns la cel putin o intrebare
+		GD.Print("Pressed");
 		int n = 0;
 		for(int i = 0; i < total; i++) if(_list[i].Count != 0) n++;
 		GD.Print(n);
@@ -123,7 +127,8 @@ public partial class Quizztime : Node2D
 			GetTree().ChangeSceneToFile("res://Scenes/Main.tscn");
 		}
 	}
-	private void _on_retry_pressed() => GetTree().ReloadCurrentScene();
+	private void _on_retry_pressed() => GetTree().ReloadCurrentScene();		//Reincearca un nou set de intrebari
+	//Functie pentru raspunsuri
 	public void SendAnswers(bool correct, bool ignore, int index)
 	{	//Ignore este mai mult pentru functia de sarit peste
 		if(!ignore)
@@ -153,6 +158,7 @@ public partial class Quizztime : Node2D
 			return;
 		}
 	}
+	//Functie pentru generarea unui nou string pentru efectul de glitch
 	public void _timeout()
 	{	randomstr = "";
 		var rand = new Godot.Collections.Array(){(string)chars[GD.RandRange(0, 11)], (string)chars[GD.RandRange(0, 11)]};
@@ -198,12 +204,14 @@ public partial class Quizztime : Node2D
 						return;
 					}
 				}
+				//Daca n-am gasit o intrebare, atunci trebuie sa fi terminat
 				intrebari=total;
 				var name1 = (String)GetChild(-1).Name;
 				if(name1.Contains("Quizitem")) GetChild(-1).QueueFree();
 				_finished();
 				return;
 			}
+			//Creeam intrebarea
 			GD.Print(intrebari);
 			var name = (String)GetChild(-1).Name;
 			if(name.Contains("Quizitem")) GetChild(-1).QueueFree();
@@ -231,6 +239,7 @@ public partial class Quizztime : Node2D
 			}
 			AddChild(_panel);
 			_panel.Name = "Quizitem";
+			//Animatie
 			if(_data.currentStats.Anims)
 			{	var tween = GetTree().CreateTween();
 				_panel.SelfModulate = new Color(1, 1, 1, (float)0.2);
@@ -250,20 +259,24 @@ public partial class Quizztime : Node2D
 					}
 				}
 			}
+			//Daca nu mai sunt, atunci am terminat
 			var name = (String)GetChild(-1).Name;
 			if(name.Contains("Quizitem")) GetChild(-1).QueueFree();
 			_finished();
 		}
 	}
+	//functie de sarit peste intrebare
 	public async void SkipQuestion()
 	{	GD.Print("Salt peste " + intrebari);
 		SendAnswers(true, true, intrebari);
 	}
+	//Functie pentru terminarea chestionarului si initializam secventa de final
 	private void _finished()
 	{	if(_data.questiontype == 0) GetNode<Button>("Continue").Hide();
 		GD.Print("Done");
 		QuestionFinished();
 	}
+	//Functia pentru afisarea rezultatului si cele doua butoane de jos
 	private async void QuestionFinished()
 	{	GetNode<Timer>("Timp").Stop();
 		GetNode<Timer>("ShakeTimer").Stop();

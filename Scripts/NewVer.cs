@@ -1,3 +1,4 @@
+//Pentru fereastra care anunta ca o noua versiune a programului este disponibila
 using Godot;
 using System;
 using System.Text;
@@ -5,12 +6,12 @@ using System.Text;
 public partial class NewVer : Control
 {	
 	private DefaultData _data;
-	private HttpRequest request;
-	private bool debug;
+	private HttpRequest request;	//Request http pentru descarcare
+	private bool debug;		//Daca vrei extra detalii privind descarcarea sau nu
 	private Vector2 mousepos;
 	private bool inputgrab;
 	private Vector2 dif;
-	private bool dwn;
+	private bool dwn;	//Daca se descarca sau nu
 	// Called when the node enters the scene tree for the first time.
 	public override void _Ready()
 	{	_data = (DefaultData)GetNode("/root/DefaultData");
@@ -39,7 +40,8 @@ public partial class NewVer : Control
 
 	// Called every frame. 'delta' is the elapsed time since the previous frame.
 	public override void _Process(double delta)
-	{	if(dwn) 
+	{	//Daca se descarca
+		if(dwn) 
 		{	GetNode<TextureProgressBar>("Panel/Download/VBoxContainer/Download/Bar/ProgressBar").Value = request.GetDownloadedBytes();
 			GetNode<TextureProgressBar>("Panel/Download/VBoxContainer/Download/Bar/ProgressBar").MaxValue = request.GetBodySize();
 			GetNode<Label>("Panel/Download/VBoxContainer/Download/Bar/ProgressBar/Text").Text = Math.Round(((float)(request.GetDownloadedBytes()) / 1048576), 1) + " MiB / " + Math.Round(((float)(request.GetBodySize()) / 1048576), 1) + " MiB";
@@ -48,7 +50,7 @@ public partial class NewVer : Control
 				GetNode<Label>("Panel/Download/VBoxContainer/Download/Bar/ProgressBar/Text").Text = "Se pregateste descarcarea...";
 			}
 		}
-		
+		//Pentru miscarea ferestrei
 		mousepos = GetViewport().GetMousePosition();
 		var winpos = GetNode<Sprite2D>("Panel").Position;
 		var newpos = Position;
@@ -62,10 +64,10 @@ public partial class NewVer : Control
 	private void _on_skip_pressed()
 	{	QueueFree();
 	}
-
+	//functie pentru anularea descarcarii
 	private void _on_cancel_pressed()
 	{	request.CancelRequest();
-		switch(OS.GetName())
+		switch(OS.GetName())	//Stergem fisierul descarcat
 		{	case "Windows":
 				DirAccess.RemoveAbsolute(OS.GetExecutablePath().GetBaseDir() + "/Zero2Linux v" + (string)_data.newversion[0] + ".zip");
 				break;
@@ -90,14 +92,16 @@ public partial class NewVer : Control
 		GetNode<TextureButton>("Panel/Skip").Disabled = false;
 		GetNode<CanvasItem>("Panel/Skip").Visible = true;
 	}
-
+	//Functie pentru linkul catre pagina de Github
 	private void _on_go_pressed()
 	{	OS.ShellOpen("https://github.com/BTF2021/Zero2Linux/releases");
 	}
+	//Functie pentru checkboxul de debug
 	private void _on_debug_pressed()
 	{	debug = !debug;
 		GetNode<CanvasItem>("Panel/Download/VBoxContainer/Download/Log").Visible = debug;
 	}
+	//Functie pentru butonul de descarcare
 	public void _on_download_pressed()
 	{	GetNode<CanvasItem>("Panel/Download/VBoxContainer/Download").Visible = true;
 		GetNode<TextureProgressBar>("Panel/Download/VBoxContainer/Download/Bar/ProgressBar").MaxValue = 100;
@@ -144,6 +148,7 @@ public partial class NewVer : Control
 		dwn = true;
 		GetNode<Label>("Panel/Download/VBoxContainer/Download/Log/LogText").Text = linktosite.ToString();
 	}
+	//Daca a fost descarcat cu succes sau nu
 	private void OnRequestCompleted(long result, long responseCode, string[] headers, byte[] body)
 	{	dwn = false;
 		if(result == 0)
@@ -153,7 +158,7 @@ public partial class NewVer : Control
 			GetNode<Label>("Panel/Download/VBoxContainer/Download/Log/LogText").Text = "Descarcat";
 
 			//In principal, procesul pentru toate platformele este acelasi
-			//Cream un fisier in care stocam rezultatul descarcarii (adica variabila body), iar, in cazul platformei Android, putem executa direct fisierul
+			//Creeam un fisier in care stocam rezultatul descarcarii (adica variabila body), iar, in cazul platformei Android, putem executa direct fisierul
 			#if GODOT_ANDROID
 				GetNode<Label>("Panel/Download/VBoxContainer/Download/Bar/ProgressBar/Text").Text = "Executarea apk-ului...";
 				GetNode<Label>("Panel/Download/VBoxContainer/Download/Log/LogText").Text = "Executarea apk-ului /storage/emulated/0/Download/Zero2Linux v" + (string)_data.newversion[0] + ".apk";
@@ -163,7 +168,7 @@ public partial class NewVer : Control
 				//Desktop
 				//Tbh, ar fi fost tare daca ar fi aplicat update-ul direct in loc sa puna arhiva intr-un folder.
 				//Am incercat sa fac acest lucru, dar ar fi dat crash daca incerci sa suprascrii orice fisier din folder (data_Zero2Linux_ ...) sau
-				//orice alt fisier inafara de executabil.
+				//orice alt fisier in afara de executabil.
 				//Executabilul in sine nu schimba versiunea si tot o sa ramana la versiunea veche, deci nu este de ajutor.
 				//Mi-ar trebui o aplicatie extra pentru actualizari pentru desktop, dar nu are sens daca asta este tot ce face.
 				//In viitor s-ar putea sa dezvolt aceasta aplicatie extra, dar pana atunci, avem acest cod de mai jos.
@@ -185,11 +190,12 @@ public partial class NewVer : Control
 		}
 		else
 		{	GD.Print("Eroare HttpRequest: " + (HttpRequest.Result)result);
+			GetNode<Label>("Panel/Download/VBoxContainer/Download/Log/LogText").Text = "Eroare HttpRequest: " + (HttpRequest.Result)result;
 			return;
 		}
 		request.QueueFree();       //Nu mai e nevoie de HttpRequest. Putem sterge
 	}
-	private void _on_drag_down()
+	private void _on_drag_down()	//Cand partea de sus a ferestrei este apasata
 	{	GD.Print("Hi");
 		#if GODOT_ANDROID
 			//Desi mousepos este preluat in _Proccess(), mousepos ramane aceeasi valoare dupa ce ecranul a fost atins
@@ -204,7 +210,7 @@ public partial class NewVer : Control
 		inputgrab = true;
 		GetParent().MoveChild(this, -1);
 	}
-	private void _on_drag_up()
+	private void _on_drag_up()	//Cand partea de sus a ferestrei nu mai este apasata
 	{	GD.Print("Bye");
 		inputgrab = false;
 	}

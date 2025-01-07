@@ -1,3 +1,4 @@
+//Pentru fereastra cu chestionare si teste
 using Godot;
 using System;
 
@@ -10,6 +11,7 @@ public partial class Quizzes : Control
 	// Called when the node enters the scene tree for the first time.
 	public override void _Ready()
 	{	_data = (DefaultData)GetNode("/root/DefaultData");
+		//Calculam numarul de lectii terminate
 		_data.currentStats.FinishedLes = 0;
 		int i = 1;
 		while(_data.lessonList.ContainsKey(i))
@@ -17,6 +19,7 @@ public partial class Quizzes : Control
 			i++;
 		}
 		GD.Print(_data.currentStats.FinishedLes);
+		//Daca nu indeplineste conditia, nu lasa utilizatorul sa faca chestionare si teste
 		if(_data.currentStats.FinishedLes >= 2) 
 		{	GetNode<Label>("Panel/Requirement").Hide();
 			GetNode<Panel>("Panel/Settings").Show();
@@ -42,7 +45,8 @@ public partial class Quizzes : Control
 
 	// Called every frame. 'delta' is the elapsed time since the previous frame.
 	public override void _Process(double delta)
-	{	mousepos = GetViewport().GetMousePosition();
+	{	//Pentru miscarea ferestrei
+		mousepos = GetViewport().GetMousePosition();
 		var winpos = GetNode<Sprite2D>("Panel").Position;
 		var newpos = Position;
 		//Pozitia este raportata la centrul ferestrei
@@ -51,12 +55,14 @@ public partial class Quizzes : Control
 		if(inputgrab) GetNode<Sprite2D>("Panel").Position = newpos;
 	}
 	private void _on_back_pressed() => QueueFree();
+	//Cele doua functii sunt pentru modul Antrenament
 	private async void _on_training_pressed()
 	{	_data.questiontype = 0;
 		_data.LoadScene("res://Scenes/Quizztime.tscn");
 	}
 	private void _on_training_mouse_entered() => GetNode<Label>("Panel/Settings/Description2").Text = "In modul antrenament, se genereaza un chestionar aleatoriu." + 
 	"\nNu conteaza daca ai raspuns corect sau gresit.";
+	//Cele doua functii sunt pentru modul Test
 	private void _on_test_pressed()
 	{	_data.questiontype = 1;
 		_data.LoadScene("res://Scenes/Quizztime.tscn");
@@ -66,7 +72,7 @@ public partial class Quizzes : Control
 	"\nNumarul raspunsurilor corecte si gresite se vor arata la finalul testului" + 
 	"\nMult noroc";
 	
-	private void _on_drag_down()
+	private void _on_drag_down()	//Cand partea de sus a ferestrei este apasata
 	{	GD.Print("Hi");
 		#if GODOT_ANDROID
 			//Desi mousepos este preluat in _Proccess(), mousepos ramane aceeasi valoare dupa ce ecranul a fost atins
@@ -81,7 +87,7 @@ public partial class Quizzes : Control
 		inputgrab = true;
 		GetParent().MoveChild(this, -1);
 	}
-	private void _on_drag_up()
+	private void _on_drag_up()	//Cand partea de sus a ferestrei nu mai este apasata
 	{	GD.Print("Bye");
 		inputgrab = false;
 	}

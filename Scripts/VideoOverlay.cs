@@ -1,3 +1,4 @@
+//Pentru videoplayer
 using Godot;
 using System;
 
@@ -6,35 +7,36 @@ public partial class VideoOverlay : Node2D
 	double videocurrenttime, videotime;          //Simpilficate VideoStreamPlayer.StreamPosition si  VideoStreamPlayer.GetStreamLength()
 	bool paused;                                 //Pentru a verifica daca utilizatorul a pus pauza
 	bool dragging;                               //Pentru a verifica daca utilizatorul foloseste oricare slider (Mai mult pentru animatie)
-	Godot.Vector2 mousepos, mouseposprev;
+	Godot.Vector2 mousepos, mouseposprev;		 //Pentru detectarea miscarii mouse-ului
 	TimeSpan vct, vt;                            //Pentru formatare text
 	private DefaultData _data;                   //DefaultData
 	private VideoStreamPlayer _stream;           //Video
 	private HSlider _slider;                     //Seekbar
 	double progresspos;
 	private HSlider _volume;                     //Volum
-	private Timer _timer;
+	private Timer _timer;						 //Timer pentru ascunderea interfatei
 	public override void _Ready()
 	{	_data = (DefaultData)GetNode("/root/DefaultData");
 		_stream = (VideoStreamPlayer)GetNode("Panel/VideoStreamPlayer");
 		_slider = (HSlider)GetNode("ControlsTint/Seekbar/Seekbar");
 		_volume = (HSlider)GetNode("ControlsTint/Controls/Volum/Panel/Slider");
 		_timer = GetNode<Timer>("Timer");
+		//Initializam streamul (videoclipul a fost deja incarcat inainte sa apara overlay-ul)
 		_stream.Stop();
 		videotime = _stream.GetStreamLength();
 		_slider.MaxValue = videotime;
-
 		_volume.Value = _data.currentStats.VideoVolume;
 		_stream.VolumeDb = _data.currentStats.VideoVolume;
+		//Pentru iconita de volum
 		if(_volume.Value == -60) GetNode<TextureButton>("ControlsTint/Controls/Volum/Volum").TextureNormal = GD.Load<CompressedTexture2D>("res://Sprites/NoVolume.png");
 		else if (_volume.Value <= -30) GetNode<TextureButton>("ControlsTint/Controls/Volum/Volum").TextureNormal = GD.Load<CompressedTexture2D>("res://Sprites/VolumeLow.png");
 		else GetNode<TextureButton>("ControlsTint/Controls/Volum/Volum").TextureNormal = GD.Load<CompressedTexture2D>("res://Sprites/VolumeHigh.png");
-
+		//Pentru butonul de Fullscreen
 		if(DisplayServer.WindowGetMode() == DisplayServer.WindowMode.Fullscreen) 
 		{	GetNode<TextureButton>("ControlsTint/Controls/Fullscr").TextureNormal = GD.Load<CompressedTexture2D>("res://Sprites/Winscr.png");
 			GetNode<TextureButton>("ControlsTint/Controls/Fullscr").TexturePressed = GD.Load<CompressedTexture2D>("res://Sprites/WinscrHighlight.png");
 		}
-		GetNode<TextureButton>("ControlsTint/Controls/Play").GrabFocus();  //Cand apesi pe spacebar, mai apare acest Node in spate.
+		GetNode<TextureButton>("ControlsTint/Controls/Play").GrabFocus();	//Preia focusul, ca sa nu apasam butonul de play din Lesson.cs
 		vt = TimeSpan.FromSeconds(videotime);
 		paused = true;
 		dragging = false;
@@ -42,17 +44,22 @@ public partial class VideoOverlay : Node2D
 
 	// Called every frame. 'delta' is the elapsed time since the previous frame.
 	public override void _Process(double delta)
-	{	videocurrenttime = _stream.StreamPosition;
+	{	//Timpul
+		videocurrenttime = _stream.StreamPosition;
 		vct = TimeSpan.FromSeconds(videocurrenttime);
-
+		//Sunt trei componente pentru seekbar: un HSlider care este folosit pentru a controla videoclipul, un Line2D gri care nu face nimic, un alt Line2D albastru care imita cel de dinainte
+		//Pentru a reprezenta HSliderul, mutam al doilea punct a Line2D-ului unde credem ca ar fi grabberul (cerculetul acela), folosind ecuatia de mai jos
+		//S-ar putea sa se desincronizeze putin mai la finalul videoclipului, dar nu prea se vede
 		progresspos = Mathf.Floor((1066.67d / videotime) * Mathf.Round((float)videocurrenttime));
 		GetNode<Line2D>("ControlsTint/Seekbar/Progress").SetPointPosition(1, new Godot.Vector2((float)progresspos, 0));
 
+		//Pentru miscarea ferestrei
 		mousepos = GetViewport().GetMousePosition();
 		if(mousepos != mouseposprev) _on_mouse_moved();
 		else _on_mouse_stopped();
 		mouseposprev = mousepos;
 
+		//Daca este redat videoclipul, modificam seekbarul
 		if(_stream.IsPlaying())
 			if(!_stream.Paused) _slider.Value = videocurrenttime;
 			else _stream.StreamPosition = _slider.Value;
@@ -65,6 +72,7 @@ public partial class VideoOverlay : Node2D
 		if(_stream.GetStreamLength() >= 3600) GetNode<Label>("ControlsTint/Controls/Time").Text = vct.ToString("hh\\:mm\\:ss") + "/" + vt.ToString("hh\\:mm\\:ss");
 		else GetNode<Label>("ControlsTint/Controls/Time").Text = vct.ToString("mm\\:ss") + "/" + vt.ToString("mm\\:ss");
 	}
+	//Putem controla redarea videoclipului si prin tastatura
 	public override void _UnhandledInput(InputEvent input)
 	{	if (input is InputEventKey eventKey)
         	if (eventKey.Pressed && !eventKey.Echo)
@@ -127,11 +135,12 @@ public partial class VideoOverlay : Node2D
 	{	if(!paused)_stream.Paused = false;
 		dragging = false;
 	}
-
+	//Daca s-a schimbat volumul
 	private void _on_volume_changed(float value)
 	{	dragging = false;
 		_data.currentStats.VideoVolume = value;
 		_stream.VolumeDb = _data.currentStats.VideoVolume;
+		//Schimbam iconita
 		if(value == -60) GetNode<TextureButton>("ControlsTint/Controls/Volum/Volum").TextureNormal = GD.Load<CompressedTexture2D>("res://Sprites/NoVolume.png");
 		else if (value <= -30) GetNode<TextureButton>("ControlsTint/Controls/Volum/Volum").TextureNormal = GD.Load<CompressedTexture2D>("res://Sprites/VolumeLow.png");
 		else GetNode<TextureButton>("ControlsTint/Controls/Volum/Volum").TextureNormal = GD.Load<CompressedTexture2D>("res://Sprites/VolumeHigh.png");
@@ -153,7 +162,7 @@ public partial class VideoOverlay : Node2D
 		}
 		_data.WriteSave(_data.LoggedUser);
 	}
-	//Functiile de mai jos sunt pentru a ascunde butoanele atunci cand cursorul nu este intr-o anumita zona a ecranului
+	//Functiile de mai jos sunt pentru a ascunde butoanele atunci cand cursorul nu s-a miscat
 	private void _on_timer_timeout()
 	{
 		var tween = GetTree().CreateTween();
@@ -169,6 +178,7 @@ public partial class VideoOverlay : Node2D
 		tween.Parallel().TweenProperty(GetNode<ColorRect>("ControlsTint"), "modulate", new Color(1, 1, 1, 1), 0.15);
 		tween.Parallel().TweenProperty(GetNode<ColorRect>("BackTint"), "modulate", new Color(1, 1, 1, 1), 0.15);
 	}
+	//Cele doua functii sunt pentru seekbar
 	private void _on_seekbar_mouse_entered()
 	{	var tween = GetTree().CreateTween();
 		tween.TweenProperty(GetNode<HSlider>("ControlsTint/Seekbar/Seekbar"), "modulate", new Color(1, 1, 1, 1), 0.15);
@@ -177,11 +187,13 @@ public partial class VideoOverlay : Node2D
 	{	var tween = GetTree().CreateTween();
 		tween.TweenProperty(GetNode<HSlider>("ControlsTint/Seekbar/Seekbar"), "modulate", new Color(1, 1, 1, 0), 0.15);
 	}
+	//Cand se apasa pe butonul de volum
 	private void _on_volum_pressed()
 	{	if(_data.currentStats.VideoVolume != -60) _on_volume_changed(-60);
 		else _on_volume_changed(0);
 		_volume.Value = _data.currentStats.VideoVolume;
 	}
+	//Pentru sliderul de volum
 	private void _on_volum_mouse_entered()
 	{	var tween = GetTree().CreateTween();
 		tween.TweenProperty(GetNode<Panel>("ControlsTint/Controls/Volum/Panel"), "custom_minimum_size", new Vector2(110, 0), 0.15);
