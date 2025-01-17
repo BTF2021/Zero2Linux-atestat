@@ -26,7 +26,6 @@ public partial class Courses : Control
 			i++;
 		}
 		GD.Print("Left");
-		GetNode<Node>("Panel/ScrollContainer/VBoxContainer").MoveChild(GetNode<Node>("Panel/ScrollContainer/VBoxContainer/End"), -1); //Facem textul de la finalul lectiei ultimul din lista
 
 		if(_data.currentStats.Anims)
 		{

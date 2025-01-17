@@ -56,23 +56,6 @@ layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 1
 
-[node name="End" type="VBoxContainer" parent="Panel/ScrollContainer/VBoxContainer"]
-layout_mode = 2
-
-[node name="MarginContainer" type="MarginContainer" parent="Panel/ScrollContainer/VBoxContainer/End"]
-custom_minimum_size = Vector2(0, 20)
-layout_mode = 2
-
-[node name="Label" type="Label" parent="Panel/ScrollContainer/VBoxContainer/End"]
-layout_mode = 2
-text = "Verifica setarile daca sunt afisate lectiile avansate si speciale
-Urmareste pagina de Github pentru posibile noi lectii :)"
-horizontal_alignment = 1
-
-[node name="MarginContainer2" type="MarginContainer" parent="Panel/ScrollContainer/VBoxContainer/End"]
-custom_minimum_size = Vector2(0, 20)
-layout_mode = 2
-
 [connection signal="button_down" from="Panel/Drag" to="." method="_on_drag_down"]
 [connection signal="button_up" from="Panel/Drag" to="." method="_on_drag_up"]
 [connection signal="pressed" from="Panel/Back" to="." method="_on_back_pressed"]
