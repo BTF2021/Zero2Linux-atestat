@@ -102,7 +102,7 @@ public partial class DefaultData : Node
     public override void _Ready()
 	{	
 		//Determinam daca putem reda videoclipuri. Daca nu, (incercam sa) dezactivam optiunea
-		#if GODOT_LINUXBSD
+		/*#if GODOT_LINUXBSD
 			#if TOOLS
 				if(DirAccess.DirExistsAbsolute("res://addons/ffmpeg/linux64"))isvideoavailable=true;
 			#else
@@ -138,6 +138,7 @@ public partial class DefaultData : Node
 			GDExtensionManager.UnloadExtension("res://addons/ffmpeg/ffmpeg.gdextension");
 			isvideoavailable=false;
 		#endif
+		*/
 
 		GD.Print("Videouri disponibile: " + isvideoavailable);
 	}
@@ -219,7 +220,18 @@ public partial class DefaultData : Node
 		//if(currentStats.version < )
 	}
 	public void LoadScene(string target)
-	{	//Incarcam Incarcare.tscn, dam valoare scena pe care vrem sa o incarcam, impachetam la loc si o incarcam ca scena principala
+	{	//Verificam daca fisierele exista
+		if(!ResourceLoader.Exists(target))
+		{	GD.Print("Incarcare esuata: Fisier invalid");
+			return;
+		}
+		//Daca scena pe care o incarcam este si o lectie, verificam si continutul pe care vrem sa-l incarcam
+		if(target == "res://Scenes/Lesson.tscn")
+			if(!ResourceLoader.Exists("res://Courses/Lesson_" + CurrentLesson + "/Lesson.tscn"))
+			{	GD.Print("Incarcare esuata: Fisier invalid");
+				return;
+			}
+		//Incarcam Incarcare.tscn, dam valoare scena pe care vrem sa o incarcam, impachetam la loc si o incarcam ca scena principala
 		var scene = (Incarcare)GD.Load<PackedScene>("res://Scenes/Incarcare.tscn").Instantiate();
 		scene.target = target;
 		PackedScene pack = new PackedScene();
