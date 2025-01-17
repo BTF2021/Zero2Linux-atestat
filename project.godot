@@ -48,6 +48,9 @@ click={
 
 [rendering]
 
-renderer/rendering_method="mobile"
+rendering_device/fallback_to_d3d12=false
+gl_compatibility/fallback_to_angle=false
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
 textures/vram_compression/import_etc2_astc=true
 anti_aliasing/screen_space_roughness_limiter/enabled=false
