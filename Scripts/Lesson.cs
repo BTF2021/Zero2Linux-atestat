@@ -21,7 +21,7 @@ public partial class Lesson : Node2D
 	{
 		_data = (DefaultData)GetNode("/root/DefaultData");
 		lessonid = _data.CurrentLesson;
-		GetNode<Control>("Panel/ScrollContainer/MarginContainer/Body").AddChild((GD.Load<PackedScene>("res://Courses/Lesson_" + lessonid + "/Lesson.tscn")).Instantiate());	//Lectia propriu-zisa
+		GetNode<Control>("Panel/ScrollContainer/MarginContainer/Body").AddChild(((PackedScene)ResourceLoader.LoadThreadedGet("res://Courses/Lesson_" + lessonid + "/Lesson.tscn")).Instantiate());	//Lectia propriu-zisa
 		_questions = new Godot.Collections.Array<Quizitem>{};
 		_node = GetNode<VBoxContainer>("Panel/ScrollContainer/MarginContainer/Body/Content");
 		GetAnswers += SendAnswers;	//Conecteaza semnalul la functie
@@ -235,6 +235,7 @@ public partial class Lesson : Node2D
 	//Butonul pentru intoarcerea in meniul principal
 	private void _on_back_pressed()
 	{	GD.Print("Pressed");
+		_data.CurrentLesson = 0;
 		GetTree().ChangeSceneToFile("res://Scenes/Main.tscn");
 	}
 	//Cand apesi pe play
